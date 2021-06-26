@@ -1,0 +1,10 @@
+{
+    "python.pythonPath": "/usr/local/bin/python",
+    "python.analysis.useImportHeuristic": true,
+    "githubPullRequests.remotes": [
+        "origin",
+        "upstream",
+        "master",
+        "main"
+    ]
+}

@@ -26,7 +26,7 @@ class Producer:
         key_schema,
         value_schema=None,
         num_partitions=1,
-        num_replicas=1,
+        num_replicas=3,
     ):
         """Initializes a Producer object with basic settings"""
         self.topic_name = topic_name
@@ -35,15 +35,16 @@ class Producer:
         self.num_partitions = num_partitions
         self.num_replicas = num_replicas
 
-        #
-        #
+
         # TODO: Configure the broker properties below. Make sure to reference the project README
         # and use the Host URL for Kafka and Schema Registry!
-        #
-        #
+        
         self.broker_properties = {
             "bootstrap.servers":BROKER_URL
-            # TODO
+            # "client.id":__name__,
+            # "batch.num.messages":"1000",
+            # "compression.type":"gzip",
+            # "enable.idempotence":True
         }
 
         # Create a schema registry client
@@ -62,9 +63,11 @@ class Producer:
 
     def topic_exists(client, topic_name):
 
+        print(f"Topic_exists topic name = {topic_name}")
         topic_fetch = client.list_topics()
+        print(f"topic_fetch = {topic_fetch}")
 
-        if topic_fetch.topics().get(topic_name) is not None:
+        if topic_fetch.topics.get(topic_name) is not None:
             return True
         else:
             return False
@@ -77,15 +80,36 @@ class Producer:
         # the Kafka Broker.
         #
         #
-        client = AdminClient(self.broker_properties)
-
-        exists = self.topic_exists(client,self.topic_name)
+        _topic = self.topic_name
+        client = AdminClient({"bootstrap.servers":BROKER_URL})
+        print(f"Producer Create Topic topic name = {self.topic_name}")
+        exists = Producer.topic_exists(client,self.topic_name)
+        print(f"exists = {not exists}")
 
         if not exists:
-            
+            futures = client.create_topics(
+                [
+                    NewTopic(
+                        topic = _topic,
+                        num_partitions = 1,
+                        replication_factor = 1,
+                        config = {
+                            "cleanup.policy":"delete",
+                            "delete.retention.ms":"100"
+                        }
+                    )
+                ]
+            )
 
+            #print(f"futures items: {futures.items}")
 
-        logger.info("topic creation kafka integration incomplete - skipping")
+            for topic,future in futures.items():
+                try:
+                    future.result()
+                    logger.info(f"Topic {_topic} successfully created")
+                except Exception as e:
+                    logger.info(f"Failed to create topic - {_topic}: {e}")
+      
 
     def time_millis(self):
         return int(round(time.time() * 1000))
@@ -97,7 +121,10 @@ class Producer:
         # TODO: Write cleanup code for the Producer here
         #
         #
-        logger.info("producer close incomplete - skipping")
+        try:
+            self.producer.flush()
+        except Exception as e:
+            logger.info(f"producer close incomplete - skipping - {e}")
 
     def time_millis(self):
         """Use this function to get the key for Kafka Events"""

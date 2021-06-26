@@ -25,3 +25,6 @@ class Train:
 
     def broken(self):
         return self.status == Train.status.broken_down
+
+if __name__ == "__main__":
+    print(Train.status(2).name)

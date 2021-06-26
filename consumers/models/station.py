@@ -21,6 +21,7 @@ class Station:
     @classmethod
     def from_message(cls, value):
         """Given a Kafka Station message, creates and returns a station"""
+        print(value["station_id"], value["station_name"], value["order"])
         return Station(value["station_id"], value["station_name"], value["order"])
 
     def handle_departure(self, direction):
@@ -29,6 +30,7 @@ class Station:
             self.dir_a = None
         else:
             self.dir_b = None
+        print("Station departure- ", self.__dict__)
 
     def handle_arrival(self, direction, train_id, train_status):
         """Unpacks arrival data"""
@@ -37,6 +39,7 @@ class Station:
             self.dir_a = status_dict
         else:
             self.dir_b = status_dict
+        print("Station arrival- ", self.__dict__)
 
     def process_message(self, json_data):
         """Handles arrival and turnstile messages"""

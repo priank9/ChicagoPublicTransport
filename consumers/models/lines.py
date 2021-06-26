@@ -19,15 +19,25 @@ class Lines:
 
     def process_message(self, message):
         """Processes a station message"""
-        if "org.chicago.cta.station" in message.topic():
-            value = message.value()
-            if message.topic() == "org.chicago.cta.stations.table.v1":
-                value = json.loads(value)
-            if value["line"] == "green":
+        #print(f"{message.topic()} ------ {'cta.station.arrival.events' in message.topic() or 'cta.stations.processed.output' in message.topic()}")
+        if "cta.stations.processed.output" in message.topic():
+            value = json.loads(message.value())
+            print(f"{message.topic()} - {value.get('line')}")   
+            if value["line"].lower() == "green":
                 self.green_line.process_message(message)
-            elif value["line"] == "red":
+            elif value["line"].lower() == "red":
                 self.red_line.process_message(message)
-            elif value["line"] == "blue":
+            elif value["line"].lower() == "blue":
+                self.blue_line.process_message(message)
+            else:
+                logger.debug("discarding unknown line msg %s", value["line"])
+        elif "cta.station.arrival.events" in message.topic():
+            value = message.value()
+            if value["line"].lower() == "green":
+                self.green_line.process_message(message)
+            elif value["line"].lower() == "red":
+                self.red_line.process_message(message)
+            elif value["line"].lower() == "blue":
                 self.blue_line.process_message(message)
             else:
                 logger.debug("discarding unknown line msg %s", value["line"])
