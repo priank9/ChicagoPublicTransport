@@ -36,15 +36,12 @@ class Producer:
         self.num_replicas = num_replicas
 
 
-        # TODO: Configure the broker properties below. Make sure to reference the project README
-        # and use the Host URL for Kafka and Schema Registry!
+        #Configure broker properties 
+        #https://docs.confluent.io/platform/current/clients/confluent-kafka-python/html/index.html#avro-producer
         
         self.broker_properties = {
-            "bootstrap.servers":BROKER_URL
-            # "client.id":__name__,
-            # "batch.num.messages":"1000",
-            # "compression.type":"gzip",
-            # "enable.idempotence":True
+            "bootstrap.servers":BROKER_URL,
+            "logger":logger
         }
 
         # Create a schema registry client
