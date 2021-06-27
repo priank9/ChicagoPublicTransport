@@ -25,8 +25,8 @@ class Producer:
         topic_name,
         key_schema,
         value_schema=None,
-        num_partitions=1,
-        num_replicas=3,
+        num_partitions=3,
+        num_replicas=1 #only one broker
     ):
         """Initializes a Producer object with basic settings"""
         self.topic_name = topic_name
@@ -41,7 +41,8 @@ class Producer:
         
         self.broker_properties = {
             "bootstrap.servers":BROKER_URL,
-            "logger":logger
+            "logger":logger,
+            "enable.idempotence":True
         }
 
         # Create a schema registry client
@@ -58,11 +59,12 @@ class Producer:
             schema_registry=schema_registry
         )
 
+    #Code to check if topic exists
     def topic_exists(client, topic_name):
 
-        print(f"Topic_exists topic name = {topic_name}")
+        logger.info(f"Topic_exists topic name = {topic_name}")
         topic_fetch = client.list_topics()
-        print(f"topic_fetch = {topic_fetch}")
+        logger.info(f"topic_fetch = {topic_fetch}")
 
         if topic_fetch.topics.get(topic_name) is not None:
             return True
@@ -71,25 +73,19 @@ class Producer:
 
     def create_topic(self):
         """Creates the producer topic if it does not already exist"""
-        #
-        #
-        # TODO: Write code that creates the topic for this producer if it does not already exist on
-        # the Kafka Broker.
-        #
-        #
+        
         _topic = self.topic_name
         client = AdminClient({"bootstrap.servers":BROKER_URL})
-        print(f"Producer Create Topic topic name = {self.topic_name}")
+        logger.info(f"create_topic - Producer Create Topic topic name = {self.topic_name}")
         exists = Producer.topic_exists(client,self.topic_name)
-        print(f"exists = {not exists}")
 
         if not exists:
             futures = client.create_topics(
                 [
                     NewTopic(
                         topic = _topic,
-                        num_partitions = 1,
-                        replication_factor = 1,
+                        num_partitions = self.num_partitions,
+                        replication_factor = self.num_replicas,
                         config = {
                             "cleanup.policy":"delete",
                             "delete.retention.ms":"100"
@@ -113,11 +109,6 @@ class Producer:
 
     def close(self):
         """Prepares the producer for exit by cleaning up the producer"""
-        #
-        #
-        # TODO: Write cleanup code for the Producer here
-        #
-        #
         try:
             self.producer.flush()
         except Exception as e:
