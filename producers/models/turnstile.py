@@ -31,7 +31,7 @@ class Turnstile(Producer):
             .replace("'", "")
         )
 
-        # TODO: Complete the below by deciding on a topic name, number of partitions, and number of
+        # Deciding on a topic name, number of partitions, and number of
         # replicas
       
         super().__init__(
@@ -48,7 +48,7 @@ class Turnstile(Producer):
         """Simulates riders entering through the turnstile."""
         num_entries = self.turnstile_hardware.get_entries(timestamp, time_step)
     
-        # TODO: Complete this function by emitting a message to the turnstile topic for the number
+        # Emitting a message to the turnstile topic for the number
         # of entries that were calculated
         
         for i in range(num_entries):
@@ -64,5 +64,6 @@ class Turnstile(Producer):
                 key_schema = Turnstile.key_schema,
                 value_schema = Turnstile.value_schema
                 )
+                logger.info(f"Turnstile event - {self.station.station_id} - {self.station.name} - {self.station.color.name}")
             except Exception as e:
                 logger.info(f"Failed to submit Turnstile event to {self.topic_name} - {e}")
