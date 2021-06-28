@@ -64,5 +64,6 @@ class Turnstile(Producer):
                 key_schema = Turnstile.key_schema,
                 value_schema = Turnstile.value_schema
                 )
+                logger.info(f"Turnstile event {self.station.station_id} - {self.station.name} - {self.station.color.name}")
             except Exception as e:
                 logger.info(f"Failed to submit Turnstile event to {self.topic_name} - {e}")
