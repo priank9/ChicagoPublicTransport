@@ -40,7 +40,7 @@ out_topic = app.topic("cta.stations.processed.output", partitions=1, value_type=
 table = app.Table(
    name="cta.stations.output",
    default=int,
-   partitions=3,
+   partitions=1,
    changelog_topic=out_topic,
 )
 
